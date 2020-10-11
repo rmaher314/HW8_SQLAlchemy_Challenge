@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, func
 
 from flask import Flask, jsonify
 
+import datetime as dt
+
 # Import Dependencies
 
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
@@ -80,7 +82,22 @@ def precipitation():
         all_dates.append(date_dict)   
     return jsonify(all_dates)
 
+@app.route("/api/v1.0/tobs")
+def tobs():
+    # Create our session (link) from Python to the DB
+    date = dt.datetime(2016, 8, 22)
+    session = Session(engine)
 
+    # Query most active station
+    results = session.query(Measurement.station, Measurement.date, Measurement.tobs).\
+        filter(Measurement.station=='USC00519281').\
+        filter(Measurement.date > date).all()
+
+    session.close()
+
+    # Convert list of tuples into normal list
+
+    return jsonify(results)
 
 if __name__ == '__main__':
     app.run(debug=True)
