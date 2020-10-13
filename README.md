@@ -3,13 +3,15 @@
 
 Documents in this GitHub Homework:
 1.  climate_starter.ipynb
-2.  climate.py
+2.  app.py
 3.  README.md
 4.  Resources
     a.  hawaii_measurement.csv
     b.  hawaii_stations.csv
     c.  hawaii_sqlite
     
+appy.py - 
+    - Date Imputs - Be sure when imputing dates to use the format MM-DD-YYYY
 
 A couple of items to note.  
 The directions seem to not be from the same assignment, which made it very confusing and not really clear. 
