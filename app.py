@@ -44,8 +44,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<'start'><br/>"
-        f"/api/v1.0/<'start'>/<'end'><br/>"
+        f"/api/v1.0/start/<'start'><br/>"
+        f"/api/v1.0/start_end/<'start'>/<'end'><br/>"
     )
 
 @app.route("/api/v1.0/stations")
@@ -54,7 +54,7 @@ def stations():
     session = Session(engine)
 
     """Return a list of all Stations in Data set"""
-    # Query all passengers
+    # Query all Stations
     results = session.query(Station.name).all()
 
     session.close()
@@ -82,22 +82,59 @@ def precipitation():
         all_dates.append(date_dict)   
     return jsonify(all_dates)
 
+@app.route("/api/v1.0/start/<start>")
+def start(start):
+    # Date format for searching should be MM-DD-YYY
+    
+    date_obj = dt.datetime.strptime(start, '%m-%d-%Y')
+    session = Session(engine)
+
+    # Query most active station
+    #,Measurement.tobs, Measurement.date, Measurement.tobs)
+    results = session.query(func.min(Measurement.tobs),func.max(Measurement.tobs),func.avg(Measurement.tobs)).filter(Measurement.date >= date_obj).all()
+        
+
+    session.close()
+
+    return jsonify(results)
+    # Convert list of tuples into normal list
+
+    
 @app.route("/api/v1.0/tobs")
 def tobs():
     # Create our session (link) from Python to the DB
     date = dt.datetime(2016, 8, 22)
     session = Session(engine)
 
-    # Query most active station
+    # Query most active station and the last 12 months of data.  
+    # #Since I queried the active station the first half of the assignment I wnent ahead and hard coded that into this side of the assignment.
     results = session.query(Measurement.station, Measurement.date, Measurement.tobs).\
         filter(Measurement.station=='USC00519281').\
-        filter(Measurement.date > date).all()
+        filter(Measurement.date >= date).all()
 
     session.close()
 
     # Convert list of tuples into normal list
 
     return jsonify(results)
+
+@app.route("/api/v1.0/start_end/<start>/<end>")
+def start_end(start,end):
+    start_date_obj = dt.datetime.strptime(start, '%m-%d-%Y')
+    end_date_obj = dt.datetime.strptime(end, '%m-%d-%Y')
+    # Date format for searching should be MM-DD-YYY
+
+    session = Session(engine)
+
+    # Query the min, maximum and averages between two sets of dates.  
+    results = session.query(func.min(Measurement.tobs),func.max(Measurement.tobs),func.avg(Measurement.tobs)).\
+        filter(Measurement.date >= start_date_obj).\
+        filter(Measurement.date <= end_date_obj).all()
+
+    session.close()
+
+    return jsonify(results)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
